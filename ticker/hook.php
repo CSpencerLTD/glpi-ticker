@@ -50,8 +50,8 @@ function plugin_ticker_uninstall()
 }
 function plugin_ticker_display_central() {
     echo "<div class='center'>";
-    echo "<h2>Live Ticker</h2>";
-    include_once(GLPI_ROOT . "/plugins/ticker/inc/ticker_content.php");
+    //echo "<h2>Live Ticker</h2>";
+    include_once(GLPI_ROOT . "/plugins/ticker/front/ticker.php");
     echo "</div>";
 }
 
