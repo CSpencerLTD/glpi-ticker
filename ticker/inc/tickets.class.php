@@ -1,42 +1,47 @@
 <?php
 
-class PluginTickerTicket {
+class PluginTickerTickets {
 
    static function getTicketsPastSLA() {
       global $DB;
 
       $sql = "
          SELECT
-            gt.id,
-            IF (gt.name LIKE '%Leaver%', 'Equipment Request', gt.name) AS title,
-            COALESCE(CONCAT(guu.firstname, ' ', guu.realname), gtuu.alternative_email) AS customer_name,
-            COALESCE(CONCAT(gut.firstname, ' ', gut.realname), 'Unallocated') AS technician,
-            COALESCE(CONCAT(gtu.firstname, ' ', gtu.realname), 'New') AS task_technician,
-            COALESCE(gs.name, 'Request') AS slt,
-            gt.date AS date_entered,
-            COALESCE(gtt.end, 'Action Required') AS task_date,
-            gt.time_to_resolve AS ttr
-         FROM glpi_tickets gt
-         LEFT JOIN glpi_tickets_users AS gtut ON gtut.tickets_id = gt.id AND gtut.type = 2
-         LEFT JOIN glpi_tickets_users AS gtuu ON gtuu.tickets_id = gt.id AND gtuu.type = 1
-         LEFT JOIN glpi_users AS gut ON gut.id = gtut.users_id
-         LEFT JOIN glpi_users AS guu ON guu.id = gtuu.users_id
-         LEFT JOIN glpi_slas AS gs ON gs.id = gt.slas_id_ttr
-         LEFT JOIN glpi_tickettasks AS gtt ON gtt.tickets_id = gt.id
-         LEFT JOIN glpi_users AS gtu ON gtu.id = gtt.users_id_tech
-         WHERE
-            gt.status NOT IN (4,6)
-            AND gt.time_to_resolve < NOW()
-            AND gt.is_deleted = 0
-         GROUP BY gt.id
-         ORDER BY gtt.end, gs.name";
+			gt.id,
+			IF (`gt`.`name` LIKE '%Leaver%', 'Equipment Request', `gt`.`name`) AS title,
+			COALESCE(CONCAT(guu.firstname, ' ', guu.realname), gtuu.alternative_email) AS customer_name,
+			COALESCE(CONCAT(gut.firstname, ' ', gut.realname), 'Unallocated') AS technician,
+			COALESCE(CONCAT(gut.firstname, ' ', gut.realname), 'New') AS task_technician,
+			COALESCE(`gut`.`id`, '0') AS assigned_id,
+			COALESCE(`gs`.`name`, 'Request') AS `slt`,
+			gt.date AS date_entered,
+			COALESCE(`gtt`.`id`, '0') AS task_id,
+			COALESCE(`gtt`.`state`, '0') AS task_state,
+			COALESCE(`gtt`.`end`,'Action Required') AS task_date,
+			gt.status,
+			gt.time_to_resolve AS ttr,
+			COALESCE(gtt.end,gt.time_to_resolve)   AS action_time
+		FROM
+			glpi_tickets gt
+			LEFT JOIN glpi_tickets_users AS gtut ON gtut.tickets_id = gt.id AND gtut.type = 2
+			LEFT JOIN glpi_tickets_users AS gtuu ON gtuu.tickets_id = gt.id AND gtuu.type = 1
+			LEFT JOIN glpi_users AS gut ON gut.id = gtut.users_id
+			LEFT JOIN glpi_users AS guu ON guu.id = gtuu.users_id
+			LEFT JOIN glpi_slas AS gs ON gs.id = gt.slas_id_ttr
+			LEFT JOIN glpi_tickettasks AS gtt ON gtt.tickets_id = gt.id
+			LEFT JOIN glpi_users AS gtu ON gtu.id = gtt.users_id_tech
+		WHERE
+			gt.status NOT IN (4,6) AND gt.time_to_resolve < NOW()
+			AND gt.is_deleted = 0
+			GROUP BY gt.id
+			ORDER BY end, slt";
 
       //return $DB->request($sql)->fetchAll();
       return iterator_to_array($DB->request($sql));
 
    }
 
-   static function getTasksPastActionTime() {
+   static function getTicketTasksPastActionTime() {
       global $DB;
 
       $sql = "
@@ -153,7 +158,7 @@ class PluginTickerTicket {
       return iterator_to_array($DB->request($sql));
    }
 
-   static function getTodaysTasks() {
+   static function getTodaysTicketTasks() {
       global $DB;
 
       $sql = "
@@ -192,11 +197,10 @@ class PluginTickerTicket {
       return iterator_to_array($DB->request($sql));
    }
 
-   static function getFutureTasks() {
+   static function getFutureTicketTasks() {
       global $DB;
 
-      $sql = "
-         SELECT
+      $sql = "SELECT
             gt.id,
             IF (gt.name LIKE '%Leaver%', 'Equipment Request', gt.name) AS title,
             COALESCE(CONCAT(guu.firstname, ' ', guu.realname), gtuu.alternative_email) AS customer_name,
