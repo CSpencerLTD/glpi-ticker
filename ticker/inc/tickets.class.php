@@ -188,7 +188,7 @@ class PluginTickerTickets {
          WHERE
             gt.status NOT IN (6)
             AND gtt.state = 1
-            AND gtt.end >= CURDATE()
+            AND gtt.end >= NOW()
             AND gtt.end < DATE_ADD(CURDATE(), INTERVAL 1 DAY)
             AND gtt.id != 0
             AND gt.is_deleted = 0";

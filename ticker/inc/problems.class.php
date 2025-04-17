@@ -191,7 +191,7 @@ class PluginTickerProblems {
             WHERE
                 gp.status NOT IN (6)
                 AND gpt.state = 1
-                AND gpt.end >= CURDATE()
+                AND gpt.end >= NOW()
                 AND gpt.end < DATE_ADD(CURDATE(), INTERVAL 1 DAY)
                 AND gpt.id != 0
                 AND gp.is_deleted = 0";

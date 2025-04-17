@@ -192,7 +192,7 @@ class PluginTickerChanges {
 		WHERE
                 gc.status NOT IN (6)
                 AND gct.state = 1
-                AND gct.end >= CURDATE()
+                AND gct.end >= NOW()
                 AND gct.end < DATE_ADD(CURDATE(), INTERVAL 1 DAY)
                 AND gct.id != 0
                 AND gc.is_deleted = 0";
