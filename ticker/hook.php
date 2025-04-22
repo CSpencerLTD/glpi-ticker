@@ -18,18 +18,10 @@
 
 use CommonGLPI;
 use Central;
+use Plugin;
 
 /**
- * Display the ticker content on the central dashboard
- */
-function plugin_ticker_display_central() {
-    echo "<div class='center'>";
-    include_once(GLPI_ROOT . "/plugins/ticker/front/ticker.php");
-    echo "</div>";
-}
-
-/**
- * Define the direct menu link for GLPI menu systems (left bar)
+ * Add a direct menu entry in the left‑hand navigation
  */
 function plugin_ticker_getMenuContent() {
     return [
@@ -39,28 +31,18 @@ function plugin_ticker_getMenuContent() {
 }
 
 /**
- * Tab integration class for the Central page
+ * Central page tab for Ticker
  */
 class PluginTickerCentralTab extends CommonGLPI {
-
     /**
-     * Returns the name of the tab
-     *
-     * @param CommonGLPI $item     Parent item (unused)
-     * @param int        $withtemplate Template flag (unused)
-     * @return string
+     * Tab label
      */
     public function getTabNameForItem(CommonGLPI $item, $withtemplate = 0) {
         return self::createTabEntry(__('Ticker', 'ticker'));
     }
 
     /**
-     * Renders the tab content when clicked
-     *
-     * @param CommonGLPI $item     Parent item (unused)
-     * @param int        $tabnum   Tab number (unused)
-     * @param int        $withtemplate Template flag (unused)
-     * @return bool
+     * Content shown when the Ticker tab is active
      */
     public static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0) {
         echo "<div class='center'>";
@@ -71,21 +53,44 @@ class PluginTickerCentralTab extends CommonGLPI {
 }
 
 /**
- * Called when the plugin is installed (activated)
- *
- * @return boolean true on success
+ * Plugin activation tasks
  */
 function plugin_ticker_install() {
-   // TODO: add database tables or default config here if needed
-   return true;
+    // Add schema or default settings here if needed
+    return true;
 }
 
 /**
- * Called when the plugin is uninstalled (deactivated)
- *
- * @return boolean true on success
+ * Plugin deactivation cleanup
  */
 function plugin_ticker_uninstall() {
-   // TODO: remove database tables or cleanup here if needed
-   return true;
+    // Clean up database or settings here if needed
+    return true;
+}
+
+// Hook registrations
+global $PLUGIN_HOOKS;
+
+// Left‑bar menu entry
+$PLUGIN_HOOKS['menu_entry']['ticker']     = 'plugin_ticker_getMenuContent';
+
+// Register Central tab
+Plugin::registerClass(
+    PluginTickerCentralTab::class,
+    ['addtabon' => Central::class]
+);
+
+// Reorder tabs among plugin‑added entries (Ticker will appear first among plugins)
+$PLUGIN_HOOKS['redefine_menus']['ticker']  = 'plugin_ticker_redefineMenus';
+
+/**
+ * Move Ticker plugin tab to front of plugin entries
+ */
+function plugin_ticker_redefineMenus(array $menus, $type = null) {
+    if (isset($menus['PluginTickerCentralTab'])) {
+        $tab = $menus['PluginTickerCentralTab'];
+        unset($menus['PluginTickerCentralTab']);
+        $menus = ['PluginTickerCentralTab' => $tab] + $menus;
+    }
+    return $menus;
 }

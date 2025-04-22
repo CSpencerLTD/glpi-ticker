@@ -29,7 +29,7 @@ include_once __DIR__ . '/hook.php';
  * --------------------------------------------------------------------------
  */
 
-define('PLUGIN_TICKER_VERSION', '0.0.1');
+define('PLUGIN_TICKER_VERSION', '0.1.3');
 
 // Minimal GLPI version, inclusive
 define("PLUGIN_TICKER_MIN_GLPI_VERSION", "10.0.0");
@@ -70,7 +70,7 @@ function plugin_version_ticker()
 {
     return [
         'name'           => 'Ticker',
-        'version'        => '0.1.0',
+        'version'        => '0.1.3',
         'author'         => 'Paul Biggin',
         'license'        => '',
         'homepage'       => '',
