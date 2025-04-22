@@ -14,47 +14,23 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- *
- * --------------------------------------------------------------------------
  */
 
-/**
- * Plugin install process
- *
- * @return boolean
- */
-function plugin_ticker_install()
-{
-    return true;
-}
+use CommonGLPI;
+use Central;
 
 /**
- * Plugin uninstall process
- *
- * @return boolean
+ * Display the ticker content on the central dashboard
  */
-function plugin_ticker_uninstall()
-{
-    return true;
-}
 function plugin_ticker_display_central() {
     echo "<div class='center'>";
-    //echo "<h2>Live Ticker</h2>";
     include_once(GLPI_ROOT . "/plugins/ticker/front/ticker.php");
     echo "</div>";
 }
 
+/**
+ * Define the direct menu link for GLPI menu systems (left bar)
+ */
 function plugin_ticker_getMenuContent() {
     return [
         'title' => __('Ticker', 'ticker'),
@@ -62,3 +38,54 @@ function plugin_ticker_getMenuContent() {
     ];
 }
 
+/**
+ * Tab integration class for the Central page
+ */
+class PluginTickerCentralTab extends CommonGLPI {
+
+    /**
+     * Returns the name of the tab
+     *
+     * @param CommonGLPI $item     Parent item (unused)
+     * @param int        $withtemplate Template flag (unused)
+     * @return string
+     */
+    public function getTabNameForItem(CommonGLPI $item, $withtemplate = 0) {
+        return self::createTabEntry(__('Ticker', 'ticker'));
+    }
+
+    /**
+     * Renders the tab content when clicked
+     *
+     * @param CommonGLPI $item     Parent item (unused)
+     * @param int        $tabnum   Tab number (unused)
+     * @param int        $withtemplate Template flag (unused)
+     * @return bool
+     */
+    public static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0) {
+        echo "<div class='center'>";
+        include_once(GLPI_ROOT . "/plugins/ticker/front/ticker.php");
+        echo "</div>";
+        return true;
+    }
+}
+
+/**
+ * Called when the plugin is installed (activated)
+ *
+ * @return boolean true on success
+ */
+function plugin_ticker_install() {
+   // TODO: add database tables or default config here if needed
+   return true;
+}
+
+/**
+ * Called when the plugin is uninstalled (deactivated)
+ *
+ * @return boolean true on success
+ */
+function plugin_ticker_uninstall() {
+   // TODO: remove database tables or cleanup here if needed
+   return true;
+}

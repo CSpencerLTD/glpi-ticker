@@ -42,18 +42,22 @@ define("PLUGIN_TICKER_MAX_GLPI_VERSION", "10.0.99");
  *
  * @return void
  */
-function plugin_init_ticker()
-{
-    global $PLUGIN_HOOKS;
+function plugin_init_ticker() {
+   global $PLUGIN_HOOKS;
 
-    $PLUGIN_HOOKS['csrf_compliant']['ticker'] = true;
+   // keep your existing hooks…
+   $PLUGIN_HOOKS['csrf_compliant']['ticker']   = true;
+   $PLUGIN_HOOKS['menu_entry']['ticker']       = 'front/ticker.php';
+   $PLUGIN_HOOKS['redefine_tabs']['ticker'] = 'plugin_ticker_redefineTabs';
 
-    // Direct menu link to ticker.php
-    $PLUGIN_HOOKS['menu_entry']['ticker'] = 'front/ticker.php';
-
-    // This makes it appear on the main dashboard
-    $PLUGIN_HOOKS['display_central']['ticker'] = 'plugin_ticker_display_central';
+   // ——— ADD THIS LINE ———
+   // give GLPI a “Ticker” tab on the Central page
+   Plugin::registerClass(
+     PluginTickerCentralTab::class,
+     ['addtabon' => Central::class]
+   );
 }
+
 
 
 /**
@@ -66,7 +70,7 @@ function plugin_version_ticker()
 {
     return [
         'name'           => 'Ticker',
-        'version'        => '1.0.0',
+        'version'        => '0.1.0',
         'author'         => 'Paul Biggin',
         'license'        => '',
         'homepage'       => '',
@@ -108,3 +112,4 @@ function plugin_ticker_check_config($verbose = false)
     }
     return false;
 }
+
