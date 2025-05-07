@@ -21,6 +21,19 @@ use Central;
 use Plugin;
 
 /**
+ * Add auto reload jacvascript
+ */
+function plugin_ticker_add_javascript() {
+  // only load on the central dashboard page
+  if (strpos($_SERVER['REQUEST_URI'], '/front/central.php') !== false) {
+    // include your CSS
+    //echo Html::includeCss('/plugins/ticker/css/ticker.css');
+    // include your guarded JS
+    echo Html::includeJs('/plugins/ticker/js/ticker.js');
+  }
+}
+
+/**
  * Add a direct menu entry in the left‑hand navigation
  */
 function plugin_ticker_getMenuContent() {
@@ -73,6 +86,9 @@ global $PLUGIN_HOOKS;
 
 // Left‑bar menu entry
 $PLUGIN_HOOKS['menu_entry']['ticker']     = 'plugin_ticker_getMenuContent';
+
+// Plugin auto-reload
+$PLUGIN_HOOKS['add_javascript']['ticker'] = 'plugin_ticker_add_javascript';
 
 // Register Central tab
 Plugin::registerClass(

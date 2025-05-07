@@ -20,7 +20,7 @@ class PluginTickerTickets {
 			COALESCE(`gtt`.`end`,'Action Required') AS task_date,
 			gt.status,
 			gt.time_to_resolve AS ttr,
-			COALESCE(gtt.end,gt.time_to_resolve)   AS action_time
+			gt.time_to_resolve   AS action_time
 		FROM
 			glpi_tickets gt
 			LEFT JOIN glpi_tickets_users AS gtut ON gtut.tickets_id = gt.id AND gtut.type = 2

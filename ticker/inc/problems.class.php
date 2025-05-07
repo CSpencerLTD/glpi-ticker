@@ -20,7 +20,7 @@ class PluginTickerProblems {
 			COALESCE(`gpt`.`end`,'Action Required') AS task_date,
 			gp.status,
 			COALESCE(`gp`.`time_to_resolve`,'TTR Missing') AS ttr,
-			COALESCE(`gp`.`time_to_resolve`,`gpt`.`end`,'Action Required') AS action_time
+			COALESCE(`gp`.`time_to_resolve`,'Action Required') AS action_time
 		FROM
 			glpi_problems gp
 			LEFT JOIN glpi_problems_users AS gput ON gput.problems_id = gp.id AND gput.type = 2

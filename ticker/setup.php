@@ -49,6 +49,8 @@ function plugin_init_ticker() {
    $PLUGIN_HOOKS['csrf_compliant']['ticker']   = true;
    $PLUGIN_HOOKS['menu_entry']['ticker']       = 'front/ticker.php';
    $PLUGIN_HOOKS['redefine_tabs']['ticker'] = 'plugin_ticker_redefineTabs';
+   $PLUGIN_HOOKS['add_css']['ticker'] = 'css/ticker.css';
+   $PLUGIN_HOOKS['add_javascript']['ticker']= 'js/ticker.js';
 
    // ——— ADD THIS LINE ———
    // give GLPI a “Ticker” tab on the Central page
@@ -70,7 +72,7 @@ function plugin_version_ticker()
 {
     return [
         'name'           => 'Ticker',
-        'version'        => '0.1.3',
+        'version'        => '0.1.7',
         'author'         => 'Paul Biggin',
         'license'        => '',
         'homepage'       => '',
