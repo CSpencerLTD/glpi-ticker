@@ -22,6 +22,27 @@ global $CFG_GLPI;
 $baseUrl = rtrim($CFG_GLPI['url_base'], '/');
 $ajaxUrl = $baseUrl . '/plugins/ticker/front/ticker.php';
 
+// at top of the file, make sure session is started
+if (session_status() !== PHP_SESSION_ACTIVE) {
+   session_start();
+}
+// GLPI stores the active user profile ID in this session key:
+//$currentUser = intval($_SESSION['glpiactiveprofileid'] ?? 0);
+$currentUser = \Session::getLoginUserID();
+
+
+echo '<div id="tickerFullScreenWrapper"'
+   .' data-ajax-url="'. $ajaxUrl .'"'
+   .' data-current-user-id="'. $currentUser .'"'
+   .' style="position:relative;">';
+
+// Print the control-panel:
+echo '<div id="tickerControls">'
+  .  '<label><input type="checkbox" id="personalViewToggle"> My Tickets</label>'
+  .  '<label><input type="checkbox" id="pauseRefreshToggle"> Pause</label>'
+  .  '<button id="fullScreenToggle" class="ticker-fullscreen-btn">⛶</button>'
+  .'</div>';
+
 // 5) Helper: sort rows by action_time
 function sortByActionTime(array &$items) {
     usort($items, function($a, $b) {
@@ -36,15 +57,14 @@ function displayZone(string $title, array $rows, string $zoneType) {
     $conditional = ['slaZone','taskZone','newUnplannedZone'];
     $always      = ['todayZone','futureZone'];
 
+    // Skip empty conditional zones:
     if (empty($rows) && in_array($zoneType, $conditional, true)) {
         return;
     }
+
     echo "<h3>{$title}</h3>";
-    if (in_array($zoneType, $always, true)) {
-        echo '<label style="display:block;margin-bottom:.5em">'
-           .  '<input type="checkbox" id="pauseRefreshToggle"> Pause auto-refresh'
-           .  '</label>';
-    }
+
+    // Show "no items" for empty always-shown zones:
     if (empty($rows) && in_array($zoneType, $always, true)) {
         $msg = $zoneType==='todayZone'
              ? '<i>No tasks for today!</i>'
@@ -53,44 +73,63 @@ function displayZone(string $title, array $rows, string $zoneType) {
         return;
     }
 
-    echo '<div style="overflow-x:auto;"><table id="'.$zoneType.'"style=\"margin-bottom:20px\"'
-       .' class="tab_cadre_fixe ticker">';
-    echo '<colgroup>'
-       .  '<col class="id-col">'
-       .  '<col class="title-col">'
-       .  '<col class="customer-col">'
-       .  '<col class="date-col">'
-       .  '<col class="tech-col">'
-       .  '<col class="task-tech-col">'
-       .  '<col class="task-date-col">'
-       .  '<col class="sla-col">'
-       .  '<col class="ttr-col">'
-       .  '<col class="action-time-col">'
-       .  '</colgroup>';
-    echo '<thead><tr>'
-       .  '<th>ID</th><th>Title</th><th>Customer</th>'
-       .  '<th>Date Entered</th><th>Technician</th>'
-       .  '<th>Task Tech</th><th>Task Date</th>'
-       .  '<th>SLA</th><th>TTR</th><th>Action Time</th>'
-       .  '</tr></thead><tbody>';
+    // Table header:
+    echo '<div style="overflow-x:auto;">'
+       .   '<table id="'. $zoneType .'" style="margin-bottom:20px;" '
+       .        'class="tab_cadre_fixe ticker">'
+       .   '<colgroup>'
+       .     '<col class="id-col">'
+       .     '<col class="title-col">'
+       .     '<col class="customer-col">'
+       .     '<col class="date-col">'
+       .     '<col class="tech-col">'
+       .     '<col class="task-tech-col">'
+       .     '<col class="task-date-col">'
+       .     '<col class="sla-col">'
+       .     '<col class="ttr-col">'
+       .     '<col class="action-time-col">'
+       .   '</colgroup>'
+       .   '<thead><tr>'
+       .     '<th>ID</th><th>Title</th><th>Customer</th>'
+       .     '<th>Date Entered</th><th>Technician</th>'
+       .     '<th>Task Tech</th><th>Task Date</th>'
+       .     '<th>SLA</th><th>TTR</th><th>Action Time</th>'
+       .   '</tr></thead>'
+       .   '<tbody>';
 
+    // Row loop: only ONE foreach, on $rows
     $now      = date('Y-m-d H:i:s');
     $qtr      = date('Y-m-d H:i:s', strtotime('+15 minutes'));
     $halfHour = date('Y-m-d H:i:s', strtotime('+30 minutes'));
 
     foreach ($rows as $r) {
-        if ($r['action_time'] < $now)         { $bg='#d9534f'; }
-        elseif ($r['action_time'] < $qtr)     { $bg='#f2dede'; }
-        elseif ($r['action_time'] < $halfHour){ $bg='#fce4ec'; }
-        elseif ($r['task_state']==='Unplanned'){ $bg='#ffb38a'; }
-        else                                  { $bg='#5cb85c'; }
+        // decide background color
+        if ($r['action_time'] < $now)          { $bg = '#d9534f'; }
+        elseif ($r['action_time'] < $qtr)      { $bg = '#f2dede'; }
+        elseif ($r['action_time'] < $halfHour) { $bg = '#fce4ec'; }
+        elseif ($r['task_state']==='Unplanned'){ $bg = '#ffb38a'; }
+        else                                   { $bg = '#5cb85c'; }
 
-        $link = str_contains($r['slt'],'Change')
+        // build the ticket/problem/change link
+        $link = str_contains($r['slt'],'Change') 
               ? "/front/change.form.php?id={$r['id']}"
               : ($r['slt']==='Problem'
                  ? "/front/problem.form.php?id={$r['id']}"
                  : "/front/ticket.form.php?id={$r['id']}");
-        echo "<tr style=\"background:{$bg};\">"
+
+        // collect all the user-IDs for filtering
+$userIds = array_filter([
+    $r['ticket_task_technician_id']   ?? null,
+    $r['ticket_assigned_id']          ?? null,
+    $r['problem_task_technician_id']  ?? null,
+    $r['problem_assigned_id']         ?? null,
+    $r['change_task_technician_id']   ?? null,
+    $r['change_assigned_id']          ?? null,
+]);
+
+        // emit the row
+        echo '<tr style="background:'. $bg .';"'
+           .' data-user-ids="'. implode(',', $userIds) .'">'
            .  "<td>{$r['id']}</td>"
            .  "<td><a href=\"{$link}\" target=\"_blank\">{$r['title']}</a></td>"
            .  "<td>{$r['customer_name']}</td>"
@@ -101,17 +140,12 @@ function displayZone(string $title, array $rows, string $zoneType) {
            .  "<td>{$r['slt']}</td>"
            .  "<td>{$r['ttr']}</td>"
            .  "<td>{$r['action_time']}</td>"
-           .  "</tr>";
+           .'</tr>';
     }
+
+    // close table
     echo '</tbody></table></div>';
 }
-
-// 7) Render the wrapper, fullscreen toggle, then all zones
-echo '<div id="tickerFullScreenWrapper" '
-   .  'style="position:relative;" '
-   .  'data-ajax-url="'.$ajaxUrl.'">';
-echo '<button id="fullScreenToggle" class="ticker-fullscreen-btn" '
-   .     'aria-label="Full screen">⛶</button>';
 
 // - SLA past-due
 $sla = array_merge(
@@ -164,6 +198,7 @@ $future = array_merge(
 sortByActionTime($future);
 displayZone("Future Tasks", $future, 'futureZone');
 
-// 8) Close wrapper
+
+
 echo '</div>';
 

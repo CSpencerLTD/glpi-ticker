@@ -1,16 +1,16 @@
-/* make the table a bit narrower and centered */
+/* ----------------------------------------------------------------------------
+   Ticker table layout & col-widths
+   ---------------------------------------------------------------------------- */
 table.ticker {
   table-layout: fixed;
   width: 98%;
   max-width: 98%;
-  margin: 0 auto;       /* center it */
+  margin: 0 auto;
   border-collapse: collapse;
 }
-
-/* keep your existing cell styles */
 table.ticker th,
 table.ticker td {
-  padding: 0.3em;        /* trimmed padding */
+  padding: 0.3em;
   border: 1px solid #ddd;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -19,12 +19,9 @@ table.ticker td {
   font-size: 0.95em;
   hyphens: auto;
 }
-
 table.ticker .title-col {
   white-space: normal;
 }
-
-/* re-balanced percentages → total = 100% */
 table.ticker col.id-col          { width: 4%;   }
 table.ticker col.title-col       { width: 16%;  }
 table.ticker col.customer-col    { width: 11%;  }
@@ -36,70 +33,46 @@ table.ticker col.sla-col         { width: 8%;   }
 table.ticker col.ttr-col         { width: 10%;  }
 table.ticker col.action-time-col { width: 10%;  }
 
-/* Full-screen wrapper: vertical scroll only */
+/* Control panel (normal & fullscreen) */
+#tickerControls {
+  position: absolute;
+  top: 0.5em; right: 0.5em;
+  display: flex;
+  align-items: center;
+  gap: 0.75em;
+  background: rgba(0,0,0,0.6);
+  padding: 0.4em 0.8em;
+  border-radius: 0.3em;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  color: #fff;
+  font-size: 1em;
+  line-height: 1.2em;
+  z-index: 1000;
+}
+#tickerControls button,
+#tickerControls label {
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+  color: inherit;
+  font-size: 1em;
+}
+#tickerControls button.ticker-fullscreen-btn {
+  font-size: 1.2em;
+  margin-left: 0.5em;
+}
+#tickerControls button.ticker-fullscreen-btn:hover {
+  color: #ffd600;
+}
+#tickerControls input[type="checkbox"] {
+  margin-right: 0.3em;
+  width: 1em; height: 1em;
+  accent-color: #ffd600;
+}
 #tickerFullScreenWrapper:fullscreen {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  overflow-y: auto;     /* vertical scrolling */
-  overflow-x: hidden;   /* prevent horizontal scroll */
-  background: white;
-  z-index: 2147483647;
-}
-
-/* Hide all other page elements when *any* element is fullscreen */
-:fullscreen * { visibility: hidden; }
-/* But keep our wrapper and its children visible */
-#tickerFullScreenWrapper:fullscreen,
-#tickerFullScreenWrapper:fullscreen * {
-  visibility: visible;
-}
-
-/* Tables inset from edges, grow naturally in height */
-#tickerFullScreenWrapper:fullscreen table.ticker {
-  width: 98%     !important;
-  max-width: 98% !important;
-  margin: 1% auto;
-  height: auto   !important;
-  max-height: none !important;
-}
-.ticker-fullscreen-btn {
-  position: absolute;
-  top: 0.5em;
-  right: 0.5em;
-  background: transparent;
-  border: none;
-  font-size: 1.2em;
-  color: #888;
-  cursor: pointer;
-  padding: 0;
-  line-height: 1;
-}
-.ticker-fullscreen-btn:hover {
-  color: #333;
-}
-
-/* keep our minimalist button top-right in all modes */
-.ticker-fullscreen-btn {
-  position: absolute;
-  top: 0.5em;
-  right: 0.5em;
-  background: rgba(255,255,255,0.0);  /* fully transparent */
-  border: none;
-  font-size: 1.2em;
-  color: #888;                         /* subtle grey */
-  cursor: pointer;
-  padding: 0;
-  line-height: 1;
-  z-index: 1;                          /* above the table */
-}
-.ticker-fullscreen-btn:hover {
-  color: #333;
-}
-
-/* no special centering in full-screen—just keep it in the corner */
-#tickerFullScreenWrapper:fullscreen .ticker-fullscreen-btn {
-  /* inherit the same top/right, override nothing */
+  background: var(--glpi-bg, #fff) !important;
 }

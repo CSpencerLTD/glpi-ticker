@@ -72,7 +72,7 @@ function plugin_version_ticker()
 {
     return [
         'name'           => 'Ticker',
-        'version'        => '0.1.7',
+        'version'        => '0.1.9',
         'author'         => 'Paul Biggin',
         'license'        => '',
         'homepage'       => '',
